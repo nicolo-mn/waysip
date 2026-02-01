@@ -128,7 +128,7 @@ impl LayerSurfaceInfo {
         if let Some(boxes) = opt_boxes {
             for box_info in boxes {
                 let bstart_x = box_info.start_x - start_x as f64;
-                let bstart_y = box_info.start_x - start_y as f64;
+                let bstart_y = box_info.start_y - start_y as f64;
                 let bend_x = box_info.end_x - start_x as f64;
                 let bend_y = box_info.end_x - start_y as f64;
                 let bwidth = bend_x - box_info.start_x;
