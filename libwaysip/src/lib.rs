@@ -206,7 +206,7 @@ fn get_area_inner(
     // or layer_shell or session-shell, then get `surface` from the wl_surface you get before, and
     // set it
     // finally thing to remember is to commit the surface, make the shell to init.
-    for (index, wloutput) in state.wloutput_infos.iter().enumerate() {
+    for wloutput in state.wloutput_infos.iter() {
         let wl_surface = wmcompositer.create_surface(&qh, ()); // and create a surface. if two or more,
         // we need to create more
         let zwlinfo = wloutput.xdg_output_info();
@@ -220,7 +220,7 @@ fn get_area_inner(
             &wl_surface,
             Some(wloutput.get_output()),
             Layer::Overlay,
-            format!("nobody_{index}"),
+            "osk".to_owned(),
             &qh,
             (),
         );
