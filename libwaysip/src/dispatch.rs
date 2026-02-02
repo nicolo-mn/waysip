@@ -355,6 +355,8 @@ impl Dispatch<wl_pointer::WlPointer, ()> for state::WaysipState {
                     y: surface_y + start_y as f64,
                 };
                 dispatch_state.end_pos = None;
+
+                // NOTE: why do we have end_pos when we do not have a start pos? I cannot understand
                 if dispatch_state.is_area() || dispatch_state.is_dimensions_or_output() {
                     if let Some(ratio) = dispatch_state.aspect_ratio {
                         let width_rel = ratio.0;

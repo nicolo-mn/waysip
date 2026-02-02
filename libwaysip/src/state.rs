@@ -341,7 +341,7 @@ impl WaysipState {
             || self.is_effective_screen()
             // NOTE: if is DimensionsOrOutput, and no end_pos, show like window select,
             // else dimension select
-            || (self.is_dimensions_or_output() && self.end_pos.is_none())
+            || (self.is_dimensions_or_output() && self.start_pos.is_none())
         {
             for (idx, info) in self
                 .wl_surfaces
