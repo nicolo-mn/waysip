@@ -371,7 +371,7 @@ impl WaysipState {
                 self.end_pos,
                 *start_position,
                 *size,
-                self.is_area() || self.is_effective_area(),
+                self.is_area() || self.is_effective_area() || self.is_dimensions_or_output(),
                 self.predefined_boxes.as_ref(),
             );
         }
