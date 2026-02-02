@@ -356,7 +356,9 @@ impl Dispatch<wl_pointer::WlPointer, ()> for state::WaysipState {
                 };
                 dispatch_state.end_pos = None;
 
-                // NOTE: why do we have end_pos when we do not have a start pos? I cannot understand
+                // NOTE:  when it is area, we just use one click to get the position, so we
+                // need to know the end_pos immediately. so even the start_pos is not decided, we
+                // still need an end_pos
                 if dispatch_state.is_area() || dispatch_state.is_dimensions_or_output() {
                     if let Some(ratio) = dispatch_state.aspect_ratio {
                         let width_rel = ratio.0;
