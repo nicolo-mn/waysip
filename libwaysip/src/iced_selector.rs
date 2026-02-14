@@ -34,7 +34,7 @@ pub(crate) enum Message {
 impl IcedSelector {
     pub(crate) fn new(sender: Sender<GUISelection>) -> Self {
         WayshotConnection::new()
-            .map(|mut conn| {
+            .map(|conn| {
                 let toplevels_info = conn.get_all_toplevels().to_vec();
                 let outputs_info = conn.get_all_outputs().to_vec();
 
@@ -46,7 +46,7 @@ impl IcedSelector {
                         (
                             t.clone(),
                             // can fail if toplevel capture is not supported
-                            match conn.screenshot_toplevel(t, false) {
+                            match conn.screenshot_toplevel(&t, false) {
                                 Ok(screenshot) => {
                                     let rgba_image = screenshot.to_rgba8();
                                     Some(iced_image::Handle::from_rgba(
