@@ -2227,8 +2227,10 @@ name = "libwaysip"
 version = "0.6.0"
 dependencies = [
  "cairo-rs",
+ "futures-channel",
  "iced",
  "iced_layershell",
+ "iced_runtime",
  "image",
  "libwayshot",
  "memmap2",

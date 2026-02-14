@@ -2,10 +2,13 @@ use std::sync::mpsc::Sender;
 
 use iced::widget::{Button, Column, button, column, image as iced_image, row, scrollable, text};
 use iced::{Alignment, Element, Length, Task};
+use iced_image::Handle;
 use iced_layershell::to_layer_message;
+use iced_runtime::task;
 use libwayshot::WayshotConnection;
 use libwayshot::output::OutputInfo;
 use libwayshot::region::TopLevel;
+use std::sync::Arc;
 
 use crate::gui_selector::GUISelection;
 
@@ -17,8 +20,8 @@ enum ViewMode {
 
 pub(crate) struct IcedSelector {
     mode: ViewMode,
-    toplevels: Vec<(TopLevel, Option<iced_image::Handle>)>,
-    outputs: Vec<(OutputInfo, Option<iced_image::Handle>)>,
+    toplevels: Vec<(TopLevel, Option<Handle>)>,
+    outputs: Vec<(OutputInfo, Option<Handle>)>,
     sender: Sender<GUISelection>,
 }
 
@@ -29,66 +32,49 @@ pub(crate) enum Message {
     ShowWindows,
     ScreenSelected(usize),
     WindowSelected(usize),
+    OutputScreenshot(usize, Handle),
+    ToplevelScreenshot(usize, Handle),
 }
 
 impl IcedSelector {
-    pub(crate) fn new(sender: Sender<GUISelection>) -> Self {
-        WayshotConnection::new()
-            .map(|conn| {
-                let toplevels_info = conn.get_all_toplevels().to_vec();
-                let outputs_info = conn.get_all_outputs().to_vec();
+    pub(crate) fn new(sender: Sender<GUISelection>) -> (Self, Task<Message>) {
+        let conn =
+            Arc::new(WayshotConnection::new().expect("Couldn't establish a Wayshot connection"));
+        let toplevels_info = conn.get_all_toplevels().to_vec();
+        let outputs_info = conn.get_all_outputs().to_vec();
 
-                // Initialize IcedSelector instance with outputs and toplevels obtained
-                // through Wayshot, alongside their screenshot
-                let toplevels: Vec<(TopLevel, Option<iced_image::Handle>)> = toplevels_info
-                    .into_iter()
-                    .map(|t| {
-                        (
-                            t.clone(),
-                            // can fail if toplevel capture is not supported
-                            match conn.screenshot_toplevel(&t, false) {
-                                Ok(screenshot) => {
-                                    let rgba_image = screenshot.to_rgba8();
-                                    Some(iced_image::Handle::from_rgba(
-                                        rgba_image.width(),
-                                        rgba_image.height(),
-                                        rgba_image.into_raw(),
-                                    ))
-                                }
-                                _ => Option::None,
-                            },
-                        )
-                    })
-                    .collect();
-
-                let outputs: Vec<(OutputInfo, Option<iced_image::Handle>)> = outputs_info
-                    .into_iter()
-                    .map(|o| {
-                        (
-                            o.clone(),
-                            match conn.screenshot_single_output(&o, false) {
-                                Ok(screenshot) => {
-                                    let rgba_image = screenshot.to_rgba8();
-                                    Some(iced_image::Handle::from_rgba(
-                                        rgba_image.width(),
-                                        rgba_image.height(),
-                                        rgba_image.into_raw(),
-                                    ))
-                                }
-                                _ => Option::None,
-                            },
-                        )
-                    })
-                    .collect();
-
-                Self {
-                    mode: ViewMode::Screens,
-                    toplevels,
-                    outputs,
-                    sender,
-                }
+        // Initialize IcedSelector instance with outputs and toplevels obtained
+        // through Wayshot, alongside their screenshot (obtained asynchronously)
+        let toplevels_tasks = toplevels_info.iter().enumerate().map(|(i, t)| {
+            let toplevel = t.clone();
+            let conn = conn.clone();
+            task::blocking(move |sender| {
+                // can fail if toplevel capture is not supported
+                parse_screenshot_and_send(conn.screenshot_toplevel(&toplevel, false), sender, i);
             })
-            .expect("Couldn't establish a Wayshot connection")
+            .map(|(i, s)| Message::ToplevelScreenshot(i, s))
+        });
+
+        let outputs_tasks = outputs_info.iter().enumerate().map(|(i, o)| {
+            let output = o.clone();
+            let conn = conn.clone();
+            task::blocking(move |sender| {
+                parse_screenshot_and_send(conn.screenshot_single_output(&output, false), sender, i);
+            })
+            .map(|(i, s)| Message::OutputScreenshot(i, s))
+        });
+
+        let all_tasks = Task::batch(toplevels_tasks.chain(outputs_tasks));
+
+        (
+            Self {
+                mode: ViewMode::Screens,
+                toplevels: toplevels_info.into_iter().map(|t| (t, None)).collect(),
+                outputs: outputs_info.into_iter().map(|o| (o, None)).collect(),
+                sender,
+            },
+            all_tasks,
+        )
     }
 
     pub(crate) fn title(&self, _id: iced::window::Id) -> Option<String> {
@@ -109,21 +95,25 @@ impl IcedSelector {
                 self.mode = ViewMode::Windows;
                 Task::none()
             }
-            Message::ScreenSelected(id) => {
-                let _ = self.sender.send(
-                    self.outputs
-                        .get(id)
-                        .map_or(GUISelection::Failed, |o| GUISelection::Output(o.0.clone())),
-                );
+            Message::ScreenSelected(index) => {
+                let _ = self
+                    .sender
+                    .send(GUISelection::Output(self.outputs[index].0.clone()));
                 iced::exit()
             }
-            Message::WindowSelected(id) => {
-                let _ =
-                    self.sender
-                        .send(self.toplevels.get(id).map_or(GUISelection::Failed, |t| {
-                            GUISelection::Toplevel(t.0.clone())
-                        }));
+            Message::WindowSelected(index) => {
+                let _ = self
+                    .sender
+                    .send(GUISelection::Toplevel(self.toplevels[index].0.clone()));
                 iced::exit()
+            }
+            Message::OutputScreenshot(index, screenshot_handle) => {
+                self.outputs[index].1 = Some(screenshot_handle);
+                Task::none()
+            }
+            Message::ToplevelScreenshot(index, screenshot_handle) => {
+                self.toplevels[index].1 = Some(screenshot_handle);
+                Task::none()
             }
             _ => Task::none(),
         }
@@ -179,7 +169,7 @@ impl IcedSelector {
 
 fn build_button<'a>(
     label: String,
-    screenshot: Option<iced_image::Handle>,
+    screenshot: Option<Handle>,
     message: Message,
 ) -> Button<'a, Message> {
     let button_content: Element<'a, Message> = match screenshot {
@@ -199,4 +189,20 @@ fn build_button<'a>(
         .width(Length::Fill)
         .style(button::subtle)
         .padding(10)
+}
+
+fn parse_screenshot_and_send(
+    capture: Result<image::DynamicImage, libwayshot::Error>,
+    mut sender: futures_channel::mpsc::Sender<(usize, Handle)>,
+    elem_index: usize,
+) {
+    if let Ok(screenshot) = capture {
+        let rgba_image = screenshot.to_rgba8();
+        let handle = Handle::from_rgba(
+            rgba_image.width(),
+            rgba_image.height(),
+            rgba_image.into_raw(),
+        );
+        let _ = sender.try_send((elem_index, handle));
+    }
 }
