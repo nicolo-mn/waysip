@@ -1,17 +1,21 @@
-use std::sync::mpsc::{self};
+use std::sync::{Arc, mpsc};
 use std::time::Duration;
 
 use iced::Theme;
 use iced_layershell::daemon;
 use iced_layershell::reexport::{Anchor, KeyboardInteractivity};
 use iced_layershell::settings::{LayerShellSettings, Settings};
+use libwayshot::WayshotConnection;
 use libwayshot::output::OutputInfo;
 use libwayshot::region::TopLevel;
 
 use crate::iced_selector::IcedSelector;
 
 /// Interface struct to start a GUI area selector and retrieve its result
-pub struct AreaSelectorGUI;
+#[derive(Default)]
+pub struct AreaSelectorGUI {
+    conn: Option<WayshotConnection>,
+}
 
 /// Represents the user's selection made through interaction with the GUI area selector
 pub enum GUISelection {
@@ -22,14 +26,24 @@ pub enum GUISelection {
 
 impl AreaSelectorGUI {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
+    }
+
+    pub fn with_connection(mut self, conn: WayshotConnection) -> Self {
+        self.conn = Some(conn);
+        self
     }
 
     /// Launches a GUI area selector
-    pub fn launch(&self) -> GUISelection {
+    pub fn launch(self) -> GUISelection {
         let (tx, rx) = mpsc::channel::<GUISelection>();
+        let conn = Arc::new(match self.conn {
+            Some(conn) => conn,
+            None => WayshotConnection::new().expect("Couldn't establish a Wayshot connection"),
+        });
+
         let _ = daemon(
-            move || IcedSelector::new(tx.clone()),
+            move || IcedSelector::new(tx.clone(), conn.clone()),
             IcedSelector::namespace,
             IcedSelector::update,
             IcedSelector::view,

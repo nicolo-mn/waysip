@@ -38,9 +38,10 @@ pub(crate) enum Message {
 }
 
 impl IcedSelector {
-    pub(crate) fn new(sender: Sender<GUISelection>) -> (Self, Task<Message>) {
-        let conn =
-            Arc::new(WayshotConnection::new().expect("Couldn't establish a Wayshot connection"));
+    pub(crate) fn new(
+        sender: Sender<GUISelection>,
+        conn: Arc<WayshotConnection>,
+    ) -> (Self, Task<Message>) {
         let toplevels_info = conn.get_all_toplevels().to_vec();
         let outputs_info = conn.get_all_outputs().to_vec();
 
