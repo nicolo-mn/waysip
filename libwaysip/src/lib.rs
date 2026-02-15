@@ -10,6 +10,9 @@ pub mod state;
 mod utils;
 pub use utils::*;
 
+#[cfg(feature = "gui")]
+mod localization;
+
 use error::WaySipError;
 use render::UiInit;
 pub use state::{AreaInfo, BoxInfo, SelectionType};

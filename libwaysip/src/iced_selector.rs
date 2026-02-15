@@ -10,6 +10,7 @@ use libwayshot::output::OutputInfo;
 use libwayshot::region::TopLevel;
 use std::sync::Arc;
 
+use crate::fl;
 use crate::gui_selector::GUISelection;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -121,7 +122,7 @@ impl IcedSelector {
 
     pub(crate) fn view(&self, _id: iced::window::Id) -> Element<'_, Message> {
         let selector = row![
-            button(text("Screens").center().width(Length::Fill))
+            button(text(fl!("screens")).center().width(Length::Fill))
                 .on_press(Message::ShowScreens)
                 .width(Length::Fill)
                 .style(if self.mode == ViewMode::Screens {
@@ -129,7 +130,7 @@ impl IcedSelector {
                 } else {
                     button::secondary
                 }),
-            button(text("Windows").center().width(Length::Fill))
+            button(text(fl!("windows")).center().width(Length::Fill))
                 .on_press(Message::ShowWindows)
                 .width(Length::Fill)
                 .style(if self.mode == ViewMode::Windows {

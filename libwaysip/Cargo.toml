@@ -37,6 +37,13 @@ iced_layershell = { git = "https://github.com/waycrate/exwlshelleventloop", bran
 libwayshot = { git = "https://github.com/waycrate/wayshot", branch = "main", optional = true }
 image = { version = "0.25", default-features = false, optional = true }
 futures-channel = { version = "0.3.31", optional = true }
+i18n-embed = { version = "0.16", features = ["fluent-system", "desktop-requester"], optional = true }
+# rust-embed resolves path from the location of execution
+# in debug mode, add feature debug-embed to avoid it during development
+# https://crates.io/crates/rust-embed
+rust-embed = { version = "8.11.0", features = ["debug-embed"], optional = true }
+i18n-embed-fl = { version = "0.10", optional = true }
+tracing = { version = "0.1", optional = true }
 
 [features]
-gui = ["dep:iced", "dep:iced_runtime", "dep:iced_layershell", "dep:libwayshot", "dep:image", "dep:futures-channel"]
+gui = ["dep:iced", "dep:iced_runtime", "dep:iced_layershell", "dep:libwayshot", "dep:image", "dep:futures-channel", "dep:i18n-embed", "dep:rust-embed", "dep:i18n-embed-fl", "dep:tracing"]
