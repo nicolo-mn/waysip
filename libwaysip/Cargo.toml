@@ -31,9 +31,12 @@ pangocairo = "0.21.1"
 memmap2 = "0.9.7"
 thiserror = "2.0.14"
 
-iced = { version = "0.14", features = ["image"] }
-iced_runtime = "0.14"
-iced_layershell = { git = "https://github.com/waycrate/exwlshelleventloop", branch = "master" }
-libwayshot = { git = "https://github.com/waycrate/wayshot", branch = "main" }
-image = { version = "0.25", default-features = false }
-futures-channel = "0.3.31"
+iced = { version = "0.14", features = ["image"], optional = true }
+iced_runtime = { version = "0.14", optional = true }
+iced_layershell = { git = "https://github.com/waycrate/exwlshelleventloop", branch = "master", optional = true }
+libwayshot = { git = "https://github.com/waycrate/wayshot", branch = "main", optional = true }
+image = { version = "0.25", default-features = false, optional = true }
+futures-channel = { version = "0.3.31", optional = true }
+
+[features]
+gui = ["dep:iced", "dep:iced_runtime", "dep:iced_layershell", "dep:libwayshot", "dep:image", "dep:futures-channel"]

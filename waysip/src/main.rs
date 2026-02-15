@@ -1,4 +1,5 @@
 use clap::Parser;
+#[cfg(feature = "gui")]
 use libwaysip::gui_selector::{AreaSelectorGUI, GUISelection};
 use libwaysip::{AreaInfo, BoxInfo, Color, Position, SelectionType, Size, WaySip};
 use std::io::{IsTerminal, Read};
@@ -81,6 +82,7 @@ struct Args {
         "format", 
         "aspect_ratio"
     ])]
+    #[cfg(feature = "gui")]
     gui_mode: bool,
 }
 
@@ -222,6 +224,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         print!("{}", apply_format(&info, &fmt, false));
     }
 
+    #[cfg(feature = "gui")]
     if args.gui_mode {
         match AreaSelectorGUI::new().launch() {
             GUISelection::Output(output) => println!(
