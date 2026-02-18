@@ -33,8 +33,8 @@ thiserror = "2.0.14"
 
 iced = { version = "0.14", features = ["image"], optional = true }
 iced_runtime = { version = "0.14", optional = true }
-iced_layershell = { git = "https://github.com/waycrate/exwlshelleventloop", branch = "master", optional = true }
-libwayshot = { git = "https://github.com/waycrate/wayshot", branch = "main", optional = true }
+iced_layershell = { version = "0.15", optional = true }
+libwayshot = { version = "0.7.2", optional = true }
 image = { version = "0.25", default-features = false, optional = true }
 futures-channel = { version = "0.3.31", optional = true }
 i18n-embed = { version = "0.16", features = ["fluent-system", "desktop-requester"], optional = true }
