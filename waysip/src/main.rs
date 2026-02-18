@@ -1,6 +1,6 @@
 use clap::Parser;
 #[cfg(feature = "gui")]
-use libwaysip::gui_selector::{AreaSelectorGUI, GUISelection};
+use libwaysip::gui_selector::{AreaSelectorGUI, GUISelection, WaySipTheme};
 use libwaysip::{AreaInfo, BoxInfo, Color, Position, SelectionType, Size, WaySip};
 use std::io::{IsTerminal, Read};
 
@@ -84,6 +84,26 @@ struct Args {
     ])]
     #[cfg(feature = "gui")]
     gui_mode: bool,
+
+    /// Set the theme for the GUI selector.
+    #[arg(short = 't', value_enum, default_value_t = WaySipTheme::Dark, conflicts_with_all = [
+        "point", 
+        "screen", 
+        "dimensions", 
+        "output", 
+        "boxes", 
+        "background", 
+        "border_color", 
+        "selection_color", 
+        "box_color", 
+        "font_name", 
+        "font_size", 
+        "border_weight", 
+        "format", 
+        "aspect_ratio"
+    ])]
+    #[cfg(feature = "gui")]
+    theme: WaySipTheme,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -226,7 +246,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     #[cfg(feature = "gui")]
     if args.gui_mode {
-        match AreaSelectorGUI::new().launch() {
+        match AreaSelectorGUI::new().with_theme(args.theme).launch() {
             GUISelection::Output(output) => println!(
                 "Selected output with title {} and positioned in {}",
                 output.name, output.logical_region
