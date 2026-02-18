@@ -84,7 +84,7 @@ impl IcedSelector {
     }
 
     pub(crate) fn namespace() -> String {
-        String::from("waysip_area_selector")
+        String::from("selection") // same as slurp
     }
 
     pub(crate) fn update(&mut self, message: Message) -> Task<Message> {
