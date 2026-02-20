@@ -3,9 +3,9 @@ use std::time::Duration;
 
 use clap::ValueEnum;
 use iced::Theme;
-use iced_layershell::daemon;
+use iced_layershell::application;
 use iced_layershell::reexport::{Anchor, KeyboardInteractivity};
-use iced_layershell::settings::{LayerShellSettings, Settings, StartMode};
+use iced_layershell::settings::{LayerShellSettings, Settings};
 use libwayshot::WayshotConnection;
 use libwayshot::output::OutputInfo;
 use libwayshot::region::TopLevel;
@@ -104,19 +104,17 @@ impl AreaSelectorGUI {
             None => WayshotConnection::new().expect("Couldn't establish a Wayshot connection"),
         });
 
-        let _ = daemon(
+        let _ = application(
             move || IcedSelector::new(tx.clone(), conn.clone()),
             IcedSelector::namespace,
             IcedSelector::update,
             IcedSelector::view,
         )
-        .title(IcedSelector::title)
         .settings(Settings {
             layer_settings: LayerShellSettings {
                 size: Some((400, 400)),
                 exclusive_zone: 0,
                 anchor: Anchor::Bottom | Anchor::Left | Anchor::Right | Anchor::Top,
-                start_mode: StartMode::Active,
                 keyboard_interactivity: KeyboardInteractivity::None,
                 ..Default::default()
             },

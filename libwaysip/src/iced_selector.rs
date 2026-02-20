@@ -79,10 +79,6 @@ impl IcedSelector {
         )
     }
 
-    pub(crate) fn title(&self, _id: iced::window::Id) -> Option<String> {
-        Some(String::from("Waysip - Area Selector"))
-    }
-
     pub(crate) fn namespace() -> String {
         String::from("selection") // same as slurp
     }
@@ -121,7 +117,7 @@ impl IcedSelector {
         }
     }
 
-    pub(crate) fn view(&self, _id: iced::window::Id) -> Element<'_, Message> {
+    pub(crate) fn view(&self) -> Element<'_, Message> {
         let selector = row![
             button(text(fl!("screens")).center().width(Length::Fill))
                 .on_press(Message::ShowScreens)
