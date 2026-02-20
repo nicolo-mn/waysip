@@ -5,7 +5,7 @@ use clap::ValueEnum;
 use iced::Theme;
 use iced_layershell::daemon;
 use iced_layershell::reexport::{Anchor, KeyboardInteractivity};
-use iced_layershell::settings::{LayerShellSettings, Settings};
+use iced_layershell::settings::{LayerShellSettings, Settings, StartMode};
 use libwayshot::WayshotConnection;
 use libwayshot::output::OutputInfo;
 use libwayshot::region::TopLevel;
@@ -116,6 +116,7 @@ impl AreaSelectorGUI {
                 size: Some((400, 400)),
                 exclusive_zone: 0,
                 anchor: Anchor::Bottom | Anchor::Left | Anchor::Right | Anchor::Top,
+                start_mode: StartMode::Active,
                 keyboard_interactivity: KeyboardInteractivity::None,
                 ..Default::default()
             },
